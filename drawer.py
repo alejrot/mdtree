@@ -2,33 +2,30 @@ import os
 import pathlib
 import sys
 
-
 from module.styles import *
 from module.connectors import *
 from module.excluded import excluded 
-
 
 # auxiliary dictionary that counts inner elements in every folder
 # it helps to shape graphic tree
 folder_elements = dict()
 
 
-
-def explore_tree(directory:str, tree_lines:list=[], sublevel:int=0, styleline="gross"):
+def explore_tree(directory:str, tree_lines:list=[], sublevel:int=0, styleline="gross", ignore:set=excluded):
 
     actual_path = pathlib.Path(directory)
 
+    # search and filtering of inner elements of folder
+    content_list = actual_path.iterdir()
+    content_obj = filter( lambda x: x.name not in ignore  , content_list)
+    content_list = list(content_obj)
+
+    # sorting content by type and name
     inner_paths = sorted(
-        actual_path.iterdir() ,
+        content_list,
         key=lambda path: (path.is_file(), path.name.lower()),
     )
     inner_paths = list( inner_paths )
-
-    # quita de elementos excluidos
-    for path in inner_paths:
-        if path.name in excluded:
-            inner_paths.remove(path)
-
 
     # search of last element in list
     nr_paths = len(inner_paths)
@@ -95,35 +92,41 @@ def explore_tree(directory:str, tree_lines:list=[], sublevel:int=0, styleline="g
         folder_elements[directory] = folder_elements[str(actual_path)] - 1
         
 
-
-
-
-def tree_drawer(
+def tree(
     folder_path: str, 
     filename:str|None=None, 
     codeblock:bool=True,
     console:bool=False,
     archive:bool=True,
     styleline:str="gross",
+    # ignore:set=excluded, 
+    exclusion_files:list=[] , 
+    custom_icons:dict=dict()
     ) -> bool:
-
-    print(f"line: {styleline}")
 
     directory = pathlib.Path(folder_path).absolute()
 
-    #it verifies that path in is really a folder
+    # it verifies that path in is really a folder
     if directory.is_dir() == False:
         print(f"ERROR: {directory.name} is not a dir or it doesn't exist.")
         print("Aborted")
         return False
 
+    # custom emojis added
+    icons.update(custom_icons)
 
+    # 'excluded' updated
+    excluded = add_exclusion_list(files=exclusion_files)
+
+    # 
     result_lines = []
-
-    explore_tree(str(directory), tree_lines=result_lines, styleline=styleline)
+    explore_tree(str(directory), 
+        tree_lines=result_lines, 
+        styleline=styleline,
+        ignore=excluded
+        )
 
     root_folder = f"📂 {directory.name}\n"
-
 
     # shell output
     if console:
@@ -153,8 +156,26 @@ def tree_drawer(
 
 
 
+def add_exclusion_list(files: list[str], overwrite:bool=False):
+
+    excluded_list = []
+    for f in files:
+        with open(f, "r") as file:
+            # excluded_list = file.readlines()
+            excluded_list.extend( file.readlines() )
+
+    for i in range(len(excluded_list)):
+        line = excluded_list[i]
+        excluded_list[i]= str(line.replace("\n","").strip())
 
 
+    if overwrite:
+        return set(excluded_list)
+
+    else:
+        global excluded
+        excluded = excluded.union(set(excluded_list))
+        return excluded
 
 
 
@@ -165,34 +186,31 @@ if __name__=="__main__":
         directory = pathlib.Path(sys.argv[1]).absolute()
         folder = str(directory)
 
-        excluded_file = "excluded.txt"
-        with open(excluded_file, "r") as file:
-            excluded_list = file.readlines()
+        exclusion_file = pathlib.Path(sys.argv[2]).absolute()
+        # add_exclusion_list([exclusion_file])
 
-        for i in range(len(excluded_list)):
-            line = excluded_list[i]
-            excluded_list[i]= str(line.replace("\n","").strip())
+
+    except IndexError:
+        print("[b]Usage:[/] python tree.py <DIRECTORY>  <EXCLUSION_FILE>")
+
+    except FileNotFoundError:
+        print(f"Exclusion file '{exclusion_file}' not found ")
+
+
+    else:
 
         special_icons = { 
             ".jpg": "🍆",
             ".py": "🐍",
             }
 
-        icons.update(special_icons)
-
-
-        excluded = excluded.union(excluded_list)
-
-
-    except IndexError:
-        print("[b]Usage:[/] python tree.py <DIRECTORY>")
-    else:
-
-        filename = "ImageHelpers.md"
-        tree_drawer(folder, 
-            # filename=filename, 
-            console=True,
-            archive=False,
+        tree(folder, 
+            # console=True,
+            # archive=False,
             # styleline="double"
-            styleline="thin"
+            styleline="thin",
+            # ignore=list(excluded ),
+            # ignore=excluded ,
+            exclusion_files=[exclusion_file],
+            custom_icons = special_icons
             )
