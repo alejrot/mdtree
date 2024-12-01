@@ -199,8 +199,10 @@ if __name__=="__main__":
         directory = pathlib.Path(sys.argv[1]).absolute()
         folder = str(directory)
 
-        exclusion_file = pathlib.Path(sys.argv[2]).absolute()
-        # add_exclusion_list([exclusion_file])
+        if len(sys.argv) > 2:
+            exclusion_file = pathlib.Path(sys.argv[2]).absolute()
+        else:
+            exclusion_file = ".treeignore"
 
 
     except IndexError:

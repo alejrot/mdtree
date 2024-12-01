@@ -1,0 +1,6 @@
+.treeignore
+
+.git 
+.gitignore
+
+__pycache__
