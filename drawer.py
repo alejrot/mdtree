@@ -15,7 +15,7 @@ def explore_tree(directory:str,
     ignore:set,
     tree_lines:list=[], 
     sublevel:int=0, 
-    styleline="gross"
+    styleline="gross",
     ):
 
     actual_path = pathlib.Path(directory)
@@ -71,12 +71,15 @@ def explore_tree(directory:str,
             icon = icons["folder"]
             string_line = f"{prefix} {icon} {path.name}\n"
 
-            # recursive call for dra
-            explore_tree(directory=str(path), 
-                ignore=ignore, 
-                tree_lines=tree_branches, 
-                sublevel=sublevel+1 , 
-                styleline=styleline)
+
+            # recursive call for drawing inner tree branches
+            if  path.name != ".git":
+                explore_tree(directory=str(path), 
+                    ignore=ignore, 
+                    tree_lines=tree_branches, 
+                    sublevel=sublevel+1 , 
+                    styleline=styleline,
+                    )
 
         else:
             # choosing emoji by file extension
@@ -110,7 +113,7 @@ def tree(
     styleline:str="gross",
     # ignore:set=excluded, 
     exclusion_files:list=[] , 
-    custom_icons:dict=dict()
+    custom_icons:dict=dict(),
     ) -> bool:
 
     directory = pathlib.Path(folder_path).absolute()
@@ -126,14 +129,14 @@ def tree(
 
     # 'excluded' updated
     excluded = add_exclusion_list(files=exclusion_files)
-    print(excluded)
+
 
     # 
     result_lines = []
     explore_tree(str(directory), 
         tree_lines=result_lines, 
         styleline=styleline,
-        ignore=excluded
+        ignore=excluded,
         )
 
     root_folder = f"📂 {directory.name}\n"
@@ -222,5 +225,5 @@ if __name__=="__main__":
             # ignore=list(excluded ),
             # ignore=excluded ,
             exclusion_files=[exclusion_file],
-            custom_icons = special_icons
+            custom_icons = special_icons,
             )

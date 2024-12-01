@@ -22,3 +22,6 @@ venv/
 
 # environment
 *.env
+
+# custom
+.treeignore
