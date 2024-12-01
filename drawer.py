@@ -4,8 +4,8 @@ import sys
 
 
 from module.styles import *
-
-from module.excluded import *
+from module.connectors import *
+from module.excluded import excluded 
 
 
 # auxiliary dictionary that counts inner elements in every folder
@@ -98,8 +98,8 @@ def explore_tree(directory:str, tree_lines:list=[], sublevel:int=0, styleline="g
 
 
 
-def draw(
-    folder: str, 
+def tree_drawer(
+    folder_path: str, 
     filename:str|None=None, 
     codeblock:bool=True,
     console:bool=False,
@@ -109,39 +109,50 @@ def draw(
 
     print(f"line: {styleline}")
 
-    directory = pathlib.Path(folder).absolute()
+    directory = pathlib.Path(folder_path).absolute()
 
+    #it verifies that path in is really a folder
     if directory.is_dir() == False:
         print(f"ERROR: {directory.name} is not a dir or it doesn't exist.")
         print("Aborted")
         return False
 
-    root_folder = f"📂 {directory.name}\n"
 
     result_lines = []
 
     explore_tree(str(directory), tree_lines=result_lines, styleline=styleline)
 
+    root_folder = f"📂 {directory.name}\n"
+
+
+    # shell output
     if console:
         print(root_folder.rstrip())   
         for line in result_lines:
             print(line.rstrip())
 
+    # file output
+    if archive:
 
-    if filename == None:
-        filename = f"{directory.name}.md"
+        # directory name as filename - by default
+        if filename == None:
+            filename = f"{directory.name}.md"
 
-    # saving tree in file
-    with open(filename, "w+") as file:
-        if codeblock:
-            file.write("```\n")
-        file.write(root_folder)
-        for line in result_lines:
-            file.write(line)
-        if codeblock:
-            file.write("```\n")
+        # saving tree in file
+        with open(filename, "w+") as file:
+            if codeblock:
+                file.write("```\n")
+            file.write(root_folder)
+            for line in result_lines:
+                file.write(line)
+            if codeblock:
+                file.write("```\n")
 
     return True
+
+
+
+
 
 
 
@@ -162,11 +173,12 @@ if __name__=="__main__":
             line = excluded_list[i]
             excluded_list[i]= str(line.replace("\n","").strip())
 
-        mas = { 
+        special_icons = { 
             ".jpg": "🍆",
-            ".py": "🐍"
-
+            ".py": "🐍",
             }
+
+        icons.update(special_icons)
 
 
         excluded = excluded.union(excluded_list)
@@ -177,7 +189,7 @@ if __name__=="__main__":
     else:
 
         filename = "ImageHelpers.md"
-        draw(folder, 
+        tree_drawer(folder, 
             # filename=filename, 
             console=True,
             archive=False,
