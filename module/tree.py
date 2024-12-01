@@ -3,7 +3,6 @@ import sys
 
 from module.styles import *
 from module.connectors import *
-from module.excluded import excluded 
 
 # auxiliary dictionary that counts inner elements in every folder
 # it helps to shape graphic tree
@@ -76,7 +75,7 @@ def explore_tree(directory:str,
                 explore_tree(directory=str(path), 
                     ignore=ignore, 
                     tree_lines=tree_branches, 
-                    sublevel=sublevel+1 , 
+                    sublevel=sublevel+1, 
                     styleline=styleline,
                     )
 
@@ -110,8 +109,7 @@ def tree(
     console:bool=False,
     archive:bool=True,
     styleline:str="gross",
-    # ignore:set=excluded, 
-    exclusion_files:list=[] , 
+    ignore_list:set=set(),
     custom_icons:dict=dict(),
     ) -> bool:
 
@@ -126,16 +124,12 @@ def tree(
     # custom emojis added
     icons.update(custom_icons)
 
-    # 'excluded' updated
-    excluded = add_exclusion_list(files=exclusion_files)
-
-
-    # 
+    # explore the input folder
     result_lines = []
     explore_tree(str(directory), 
+        ignore=ignore_list,
         tree_lines=result_lines, 
         styleline=styleline,
-        ignore=excluded,
         )
 
     root_folder = f"📂 {directory.name}\n"
@@ -168,7 +162,7 @@ def tree(
 
 
 
-def add_exclusion_list(files: list[str], overwrite:bool=False):
+def exclusion_list(files: list[str], overwrite:bool=False)->set:
 
     excluded_list = []
     for f in files:
@@ -180,13 +174,6 @@ def add_exclusion_list(files: list[str], overwrite:bool=False):
         line = excluded_list[i]
         excluded_list[i]= str(line.replace("\n","").strip())
 
-
-    if overwrite:
-        return set(excluded_list)
-
-    else:
-        global excluded
-        excluded = excluded.union(set(excluded_list))
-        return excluded
+    return set(excluded_list)
 
 

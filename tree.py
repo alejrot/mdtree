@@ -2,7 +2,7 @@ import pathlib
 import sys
 
 
-from module.tree import tree
+from module.tree import tree, exclusion_list
 
 
 
@@ -35,6 +35,9 @@ if __name__=="__main__":
 
     else:
 
+        excluded = exclusion_list([exclusion_file])
+
+
         special_icons = { 
             ".py": "🐍",
             }
@@ -42,10 +45,9 @@ if __name__=="__main__":
         tree(folder, 
             # console=True,
             # archive=False,
-            # styleline="double"
-            styleline="thin",
-            # ignore=list(excluded ),
-            # ignore=excluded ,
-            exclusion_files=[exclusion_file],
-            custom_icons = special_icons,
+            # styleline="double",
+            # styleline="thin",
+            styleline="gross",
+            ignore_list=excluded,
+            custom_icons=special_icons,
             )
