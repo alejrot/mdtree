@@ -5,96 +5,105 @@ import sys
 
 from module.styles import *
 
-excluded = { ".git", "__pycache__", "build", "cache"}
+from module.excluded import *
+
+
+# auxiliary dictionary that counts inner elements in every folder
+# it helps to shape graphic tree
+folder_elements = dict()
 
 
 
+def explore_tree(directory:str, tree_lines:list=[], sublevel:int=0, styleline="gross"):
 
+    actual_path = pathlib.Path(directory)
 
-
-def explore(directory:str , lineas:list=[] ,nivel:int=0, styleline="gross"):
-
-
-    ruta_actual = pathlib.Path(directory)
-
-    rutas_internas = sorted(
-        ruta_actual.iterdir() ,
+    inner_paths = sorted(
+        actual_path.iterdir() ,
         key=lambda path: (path.is_file(), path.name.lower()),
     )
-    rutas_internas = list( rutas_internas )
+    inner_paths = list( inner_paths )
 
     # quita de elementos excluidos
-    for ruta in rutas_internas:
-        if ruta.name in excluded:
-            rutas_internas.remove(ruta)
-            # continue
+    for path in inner_paths:
+        if path.name in excluded:
+            inner_paths.remove(path)
 
-    # busqueda del último elemento de la lista 
-    nr_paths = len(rutas_internas)
+
+    # search of last element in list
+    nr_paths = len(inner_paths)
     if nr_paths > 0:
-        ruta_ultima = rutas_internas[nr_paths-1] 
+        last_path = inner_paths[nr_paths-1] 
 
-    # diccionario auxiliar: conteo de elementos internos por directorio
-    dict_paths[directory] = nr_paths
+    # auxiliary dictionary that counts inner elements in every folder
+    folder_elements[directory] = nr_paths
 
 
-    # conteo de elementos en ruta actual
+    # element count in actual folder
     level_elements=[]
-    ruta_padre = ruta_actual
-    for i in range(1, nivel+1):
-        # print(i)
-        ruta_padre = ruta_padre.parent
-        # print(ruta_padre)
-        level_elements.append(dict_paths[str(ruta_padre)])
+    parent_path = actual_path
+    for i in range(1, sublevel+1):
+        parent_path = parent_path.parent
+        level_elements.append(folder_elements[str(parent_path)])
     level_elements.reverse()
 
-    # composicion de elementos de arbol
-    prefijo=""
+    # tree element's composition
+    tree_sequence =""
     for e in level_elements:
         seq = f"{bar[styleline]} " if e > 1 else "    "
-        prefijo += seq
+        tree_sequence  += seq
 
-    # composicion de arbol de archivos
-    for ruta in rutas_internas:
 
-        suffix = union[styleline] if ruta != ruta_ultima else corner[styleline]
-        sublineas = []
+    # tree composition - branch by branch
+    for path in inner_paths:
 
-        prefix = prefijo + suffix
+        # list used to keep inner elements of subfolders
+        tree_branches = []
 
-        if ruta.is_dir():
+        # choosing between union ("┣━━") or corner ("┗━━")
+        tree_suffix = union[styleline] if path != last_path else corner[styleline]
+        prefix = tree_sequence + tree_suffix
+
+        if path.is_dir():
+            # adding folder's icon and connector
             icon = icons["folder"]
-            linea = f"{prefix} {icon} {ruta.name}\n"
-            explore(str(ruta), lineas=sublineas, nivel=nivel+1 , styleline=styleline)
+            string_line = f"{prefix} {icon} {path.name}\n"
+
+            # recursive call for dra
+            explore_tree(str(path), tree_lines=tree_branches, sublevel=sublevel+1 , styleline=styleline)
 
         else:
-            if ruta.suffix in icons.keys():
-                icon = icons[ruta.suffix]
-            elif ruta.suffix in images_list:
+            # choosing emoji by file extension
+            if path.suffix in icons.keys():
+                icon = icons[path.suffix]
+            elif path.suffix in images_list:
                 icon = icons["image"]
-            elif ruta.suffix in config_list:
+            elif path.suffix in config_list:
                 icon = icons["config"]
-            elif ruta.suffix in document_list:
+            elif path.suffix in document_list:
                 icon = icons["document"]
             else:
                 icon = icons["default"]
+            # adding file's icon and connector
+            string_line = f"{prefix} {icon} {path.name}\n"
 
-            linea = f"{prefix} {icon} {ruta.name}\n"
+        # adding inner elements
+        tree_lines.append(string_line)
+        tree_lines.extend(tree_branches)
 
+        # every time
+        folder_elements[directory] = folder_elements[str(actual_path)] - 1
         
-        lineas.append(linea)
-        lineas.extend(sublineas)
-
-        dict_paths[directory] = dict_paths[str(ruta_actual)] - 1
-        
 
 
 
 
-def draw(folder: str, 
+def draw(
+    folder: str, 
     filename:str|None=None, 
     codeblock:bool=True,
     console:bool=False,
+    archive:bool=True,
     styleline:str="gross",
     ) -> bool:
 
@@ -111,7 +120,7 @@ def draw(folder: str,
 
     result_lines = []
 
-    explore(str(directory), lineas=result_lines, styleline=styleline)
+    explore_tree(str(directory), tree_lines=result_lines, styleline=styleline)
 
     if console:
         print(root_folder.rstrip())   
@@ -146,7 +155,6 @@ if __name__=="__main__":
         folder = str(directory)
 
         excluded_file = "excluded.txt"
-        # excluded_file = "excluded.md"
         with open(excluded_file, "r") as file:
             excluded_list = file.readlines()
 
@@ -154,28 +162,25 @@ if __name__=="__main__":
             line = excluded_list[i]
             excluded_list[i]= str(line.replace("\n","").strip())
 
-
-
-    except IndexError:
-        print("[b]Usage:[/] python tree.py <DIRECTORY>")
-    else:
-
-
         mas = { 
             ".jpg": "🍆",
             ".py": "🐍"
 
             }
 
-        # icons.update(mas)
-
 
         excluded = excluded.union(excluded_list)
 
 
+    except IndexError:
+        print("[b]Usage:[/] python tree.py <DIRECTORY>")
+    else:
+
         filename = "ImageHelpers.md"
         draw(folder, 
-            filename=filename, 
+            # filename=filename, 
             console=True,
-            styleline="double"
+            archive=False,
+            # styleline="double"
+            styleline="thin"
             )

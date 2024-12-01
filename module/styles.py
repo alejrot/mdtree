@@ -62,5 +62,3 @@ bar = {
 
 
 
-
-dict_paths = dict()
