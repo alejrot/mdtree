@@ -11,7 +11,12 @@ from module.excluded import excluded
 folder_elements = dict()
 
 
-def explore_tree(directory:str, tree_lines:list=[], sublevel:int=0, styleline="gross", ignore:set=excluded):
+def explore_tree(directory:str, 
+    ignore:set,
+    tree_lines:list=[], 
+    sublevel:int=0, 
+    styleline="gross"
+    ):
 
     actual_path = pathlib.Path(directory)
 
@@ -67,7 +72,11 @@ def explore_tree(directory:str, tree_lines:list=[], sublevel:int=0, styleline="g
             string_line = f"{prefix} {icon} {path.name}\n"
 
             # recursive call for dra
-            explore_tree(str(path), tree_lines=tree_branches, sublevel=sublevel+1 , styleline=styleline)
+            explore_tree(directory=str(path), 
+                ignore=ignore, 
+                tree_lines=tree_branches, 
+                sublevel=sublevel+1 , 
+                styleline=styleline)
 
         else:
             # choosing emoji by file extension
@@ -117,6 +126,7 @@ def tree(
 
     # 'excluded' updated
     excluded = add_exclusion_list(files=exclusion_files)
+    print(excluded)
 
     # 
     result_lines = []
