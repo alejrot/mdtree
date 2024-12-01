@@ -1,0 +1,24 @@
+# Python folders
+__pycache__/
+dist/
+build/
+venv/
+
+
+# text
+*.md
+*.txt
+
+# images
+*.jpg
+*.png
+*.bmp
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.tif
+*.tiff
+
+# environment
+*.env
