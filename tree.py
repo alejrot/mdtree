@@ -14,7 +14,10 @@ if __name__=="__main__":
 
         if len(sys.argv) > 2:
             exclusion_file = pathlib.Path(sys.argv[2]).absolute()
-            if exclusion_file.is_file()==False:
+            if sys.argv[2].lower() == "none":
+                exclusion_file = "none"
+
+            elif exclusion_file.is_file()==False:
                 print(f"Exclusion file '{exclusion_file}' not found.")
                 exclusion_file = ".treeignore"
                 print(f"Exclusion file '{exclusion_file}' used instead.")
@@ -35,11 +38,14 @@ if __name__=="__main__":
 
     else:
 
-        excluded = exclusion_list([exclusion_file])
+        if exclusion_file == "none":
+            excluded = set()
+        else: 
+            excluded = exclusion_list([exclusion_file])
 
 
         special_icons = { 
-            ".py": "🐍",
+            # ".py": "🐍",
             }
 
         tree(folder, 
