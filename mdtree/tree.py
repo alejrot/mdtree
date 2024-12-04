@@ -1,8 +1,8 @@
 import pathlib
 import sys
 
-from module.styles import *
-from module.connectors import *
+from mdtree.styles import *
+from mdtree.connectors import *
 
 # auxiliary dictionary that counts inner elements in every folder
 # it helps to shape graphic tree
@@ -175,5 +175,4 @@ def exclusion_list(files: list[str], overwrite:bool=False)->set:
         excluded_list[i]= str(line.replace("\n","").strip())
 
     return set(excluded_list)
-
 

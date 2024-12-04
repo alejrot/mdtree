@@ -3,7 +3,7 @@ __pycache__/
 dist/
 build/
 venv/
-
+mdtree.egg-info/
 
 # text
 *.md
