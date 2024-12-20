@@ -25,3 +25,6 @@ mdtree.egg-info/
 
 # custom
 .treeignore
+
+# pyinstaller
+*.spec
