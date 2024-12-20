@@ -2,5 +2,10 @@
 
 .git 
 .gitignore
+.svn
 
 __pycache__
+build
+venv
+mdtree.egg-info
+dist

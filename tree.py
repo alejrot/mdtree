@@ -6,20 +6,21 @@ import argparse
 from mdtree.tree import tree, exclusion_list
 
 
-
-
-
 # initialization and help
 parser = argparse.ArgumentParser(
     description='''
         Explores and draw the tree of files
         in file or console.
-    ''')
+    ''',
+    # arguments file support
+    fromfile_prefix_chars='@'
+    )
+
 # input arguments definition
 parser.add_argument('-f', '--folder', type=str, 
     required=False,
     default='.',
-    help="Folder's path to be explored"
+    help="Folder's path to be explored."
     )
 parser.add_argument('-s', '--styleline', type=str,
     choices=['gross', 'thin', 'double'],
@@ -27,84 +28,68 @@ parser.add_argument('-s', '--styleline', type=str,
     required=False,
     help="Connector's line style"
     )
-
-parser.add_argument('-c','--console', type=bool,
-    choices=['true', 'false'],
-    default=False,
+parser.add_argument('-n', '--name', type=str,
+    default=None, 
+    required=False,
+    help="Custom name for output file."
+    )
+parser.add_argument('-c','--console', type=str,
+    nargs='?',
+    default='false',
     required=False,
     help="Shows file tree in console."
     )
+parser.add_argument('-b','--block', type=str,
+    nargs='?',
+    default='false',
+    required=False,
+    help="Saves filetree as markdown codeblock in file."
+    )
+parser.add_argument('-e','--exclusion-file', type=str,
+    default='.treeignore',
+    required=False,
+    help="File with excluded files and folders from search."
+    )
 
 
-
-
+# arguments reading
 args = parser.parse_args()
 
-
+# absolute path of input folder
 directory = pathlib.Path(args.folder).absolute()
 folder = str(directory)
+
+# show tree in shell
+console = False
+if args.console == None:
+    console = True
+
+# setting exclusion list from file
+if args.exclusion_file == "none":
+    excluded = set()
+else: 
+    excluded = exclusion_list([args.exclusion_file ])
+
+# saves output as markdown codeblock in file
+block = False
+if args.block == None:
+    block = True
+
+
 
 
 special_icons = { 
     # ".py": "🐍",
     }
 
+
 tree(folder_path=folder, 
-    console=args.console,
-    # filename=  ,
-    # codeblock= ,
-    # archive=False,
+    filename=args.name,
+    codeblock=block ,
+    console=console,
+    archive= not console,
     styleline=args.styleline,
-    # ignore_list=excluded,
-    custom_icons=special_icons,
+    ignore_list=excluded,
+    # custom_icons=special_icons,
     )
 
-    # try:
-    #     directory = pathlib.Path(sys.argv[1]).absolute()
-    #     folder = str(directory)
-
-    #     if len(sys.argv) > 2:
-    #         exclusion_file = pathlib.Path(sys.argv[2]).absolute()
-    #         if sys.argv[2].lower() == "none":
-    #             exclusion_file = "none"
-
-    #         elif exclusion_file.is_file()==False:
-    #             print(f"Exclusion file '{exclusion_file}' not found.")
-    #             exclusion_file = ".treeignore"
-    #             print(f"Exclusion file '{exclusion_file}' used instead.")
-
-    #     else:
-    #         exclusion_file = ".treeignore"
-
-
-
-    # except IndexError:
-    #     print("Usage: python tree.py <DIRECTORY>")
-    #     print("or:")
-    #     print("Usage: python tree.py <DIRECTORY>  <EXCLUSION_FILE>")
-
-    # except FileNotFoundError:
-    #     print(f"Exclusion file '{exclusion_file}' not found ")
-    #     exclusion_file = ".treeignore"
-
-    # else:
-
-    #     if exclusion_file == "none":
-    #         excluded = set()
-    #     else: 
-    #         excluded = exclusion_list([exclusion_file])
-
-
-# special_icons = { 
-#     # ".py": "🐍",
-#     }
-
-# tree(folder, 
-#     # console=True,
-#     # archive=False,
-#     # styleline="double",
-#     # styleline="thin",
-#     styleline="gross",
-#     ignore_list=excluded,
-#     custom_icons=special_icons,
-#     )
